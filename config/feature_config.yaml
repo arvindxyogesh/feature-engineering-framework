@@ -1,0 +1,72 @@
+target_column: purchased
+id_column: user_id
+
+validation:
+  required_columns:
+    - session_duration_sec
+    - page_views
+    - cart_value
+    - device_type
+    - traffic_source
+    - purchased
+  max_missing_pct: 0.3
+  min_rows: 100
+  max_cardinality: 0.95
+
+transformers:
+  - type: numerical_scaler
+    columns:
+      - session_duration_sec
+      - page_views
+      - cart_value
+      - previous_purchases
+      - age
+    method: standard
+
+  - type: log_transformer
+    columns:
+      - session_duration_sec
+      - cart_value
+      - page_views
+
+  - type: bin_encoder
+    columns:
+      - age
+      - session_duration_sec
+      - cart_value
+    n_bins: 5
+
+  - type: interaction_features
+    columns:
+      - page_views
+      - session_duration_sec
+      - cart_value
+
+  - type: frequency_encoder
+    columns:
+      - device_type
+      - traffic_source
+      - country
+
+  - type: target_encoder
+    columns:
+      - device_type
+      - traffic_source
+      - country
+    smoothing: 10.0
+
+  - type: one_hot_encoder
+    columns:
+      - device_type
+      - traffic_source
+    max_cardinality: 10
+
+  - type: calendar_features
+    columns:
+      - session_start
+
+  - type: cyclical_encoder
+    columns:
+      - session_start_month
+      - session_start_hour
+      - session_start_weekday
